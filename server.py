@@ -10,13 +10,6 @@ from flask import Flask
 
 db = SQLAlchemy()
 
-application = Flask("cubie-oauth-server")
-application.debug = False
-application.secret_key = 'production'
-application.config.update({
-    'SQLALCHEMY_DATABASE_URI': 'sqlite:///test.sqlite'
-})
-
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(40), unique=True, index=True,
@@ -330,5 +323,12 @@ def create_server(application, oauth=None):
 
 
 if __name__ == '__main__':
+    application = Flask("cubie-oauth-server")
+    application.debug = False
+    application.secret_key = 'production'
+    application.config.update({
+        'SQLALCHEMY_DATABASE_URI': 'sqlite:///test.sqlite'
+    })
+
     application = create_server(application)
     application.run()
