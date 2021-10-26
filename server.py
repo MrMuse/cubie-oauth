@@ -257,16 +257,16 @@ def create_server(application, oauth=None):
 
     application = prepare_app(application)
 
-    @app.before_request
+    @application.before_request
     def load_current_user():
         user = User.query.get(1)
         g.user = user
 
-    @app.route('/home')
+    @application.route('/home')
     def home():
         return render_template('home.html')
 
-    @app.route('/oauth/authorize', methods=['GET', 'POST'])
+    @application.route('/oauth/authorize', methods=['GET', 'POST'])
     @oauth.authorize_handler
     def authorize(*args, **kwargs):
         # NOTICE: for real project, you need to require login
@@ -284,35 +284,35 @@ def create_server(application, oauth=None):
         confirm = request.form.get('confirm', 'no')
         return confirm == 'yes'
 
-    @app.route('/oauth/token', methods=['POST', 'GET'])
+    @application.route('/oauth/token', methods=['POST', 'GET'])
     @oauth.token_handler
     def access_token():
         return {}
 
-    @app.route('/oauth/revoke', methods=['POST'])
+    @application.route('/oauth/revoke', methods=['POST'])
     @oauth.revoke_handler
     def revoke_token():
         pass
 
-    @app.route('/api/email')
+    @application.route('/api/email')
     @oauth.require_oauth('email')
     def email_api():
         oauth = request.oauth
         return jsonify(email='me@oauth.net', username=oauth.user.username)
 
-    @app.route('/api/client')
+    @application.route('/api/client')
     @oauth.require_oauth()
     def client_api():
         oauth = request.oauth
         return jsonify(client=oauth.client.name)
 
-    @app.route('/api/address/<city>')
+    @application.route('/api/address/<city>')
     @oauth.require_oauth('address')
     def address_api(city):
         oauth = request.oauth
         return jsonify(address=city, username=oauth.user.username)
 
-    @app.route('/api/method', methods=['GET', 'POST', 'PUT', 'DELETE'])
+    @application.route('/api/method', methods=['GET', 'POST', 'PUT', 'DELETE'])
     @oauth.require_oauth()
     def method_api():
         return jsonify(method=request.method)
