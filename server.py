@@ -128,19 +128,19 @@ def current_user():
     return g.user
 
 
-def cache_provider(app):
-    oauth = OAuth2Provider(app)
+def cache_provider(application):
+    oauth = OAuth2Provider(application)
 
     bind_sqlalchemy(oauth, db.session, user=User,
                     token=Token, client=Client)
 
-    app.config.update({'OAUTH2_CACHE_TYPE': 'simple'})
-    bind_cache_grant(app, oauth, current_user)
+    application.config.update({'OAUTH2_CACHE_TYPE': 'simple'})
+    bind_cache_grant(application, oauth, current_user)
     return oauth
 
 
-def sqlalchemy_provider(app):
-    oauth = OAuth2Provider(app)
+def sqlalchemy_provider(application):
+    oauth = OAuth2Provider(application)
 
     bind_sqlalchemy(oauth, db.session, user=User, token=Token,
                     client=Client, grant=Grant, current_user=current_user)
@@ -148,8 +148,8 @@ def sqlalchemy_provider(app):
     return oauth
 
 
-def default_provider(app):
-    oauth = OAuth2Provider(app)
+def default_provider(application):
+    oauth = OAuth2Provider(application)
 
     @oauth.clientgetter
     def get_client(client_id):
@@ -200,9 +200,9 @@ def default_provider(app):
     return oauth
 
 
-def prepare_app(app):
-    db.init_app(app)
-    db.app = app
+def prepare_app(application):
+    db.init_app(application)
+    db.app = application
     db.create_all()
 
     client1 = Client(
@@ -248,14 +248,14 @@ def prepare_app(app):
         db.session.commit()
     except:
         db.session.rollback()
-    return app
+    return application
 
 
-def create_server(app, oauth=None):
+def create_server(application, oauth=None):
     if not oauth:
-        oauth = default_provider(app)
+        oauth = default_provider(application)
 
-    app = prepare_app(app)
+    application = prepare_app(application)
 
     @app.before_request
     def load_current_user():
@@ -321,16 +321,16 @@ def create_server(app, oauth=None):
     def require_oauth_invalid(req):
         return jsonify(message=req.error_message), 401
 
-    return app
+    return application
 
 
 if __name__ == '__main__':
     from flask import Flask
-    app = Flask(__name__)
-    app.debug = True
-    app.secret_key = 'development'
-    app.config.update({
+    application = Flask(__name__)
+    application.debug = True
+    application.secret_key = 'development'
+    application.config.update({
         'SQLALCHEMY_DATABASE_URI': 'sqlite:///test.sqlite'
     })
-    app = create_server(app)
-    app.run()
+    application = create_server(application)
+    application.run()
