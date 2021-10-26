@@ -8,6 +8,13 @@ from flask_oauthlib.contrib.oauth2 import bind_sqlalchemy
 from flask_oauthlib.contrib.oauth2 import bind_cache_grant
 from flask import Flask
 
+application = Flask("cubie-oauth-server")
+application.debug = False
+application.secret_key = 'production'
+application.config.update({
+    'SQLALCHEMY_DATABASE_URI': 'sqlite:///test.sqlite'
+})
+    
 db = SQLAlchemy()
 
 class User(db.Model):
@@ -323,12 +330,5 @@ def create_server(application, oauth=None):
 
 
 if __name__ == '__main__':
-    application = Flask("cubie-oauth-server")
-    application.debug = False
-    application.secret_key = 'production'
-    application.config.update({
-        'SQLALCHEMY_DATABASE_URI': 'sqlite:///test.sqlite'
-    })
-
     application = create_server(application)
     application.run()
