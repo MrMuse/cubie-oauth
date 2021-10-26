@@ -25,8 +25,7 @@ class Client(db.Model):
     # human readable name
     name = db.Column(db.String(40))
     client_id = db.Column(db.String(40), primary_key=True)
-    client_secret = db.Column(db.String(55), unique=True, index=True,
-                              nullable=False)
+    client_secret = db.Column(db.String(55), unique=True, index=True, nullable=False)
     client_type = db.Column(db.String(20), default='public')
     _redirect_uris = db.Column(db.Text)
     default_scope = db.Column(db.Text, default='email address')
@@ -128,19 +127,19 @@ def current_user():
     return g.user
 
 
-def cache_provider(app):
-    oauth = OAuth2Provider(app)
+def cache_provider(application):
+    oauth = OAuth2Provider(application)
 
     bind_sqlalchemy(oauth, db.session, user=User,
                     token=Token, client=Client)
 
-    app.config.update({'OAUTH2_CACHE_TYPE': 'simple'})
-    bind_cache_grant(app, oauth, current_user)
+    application.config.update({'OAUTH2_CACHE_TYPE': 'simple'})
+    bind_cache_grant(application, oauth, current_user)
     return oauth
 
 
-def sqlalchemy_provider(app):
-    oauth = OAuth2Provider(app)
+def sqlalchemy_provider(application):
+    oauth = OAuth2Provider(application)
 
     bind_sqlalchemy(oauth, db.session, user=User, token=Token,
                     client=Client, grant=Grant, current_user=current_user)
@@ -148,8 +147,8 @@ def sqlalchemy_provider(app):
     return oauth
 
 
-def default_provider(app):
-    oauth = OAuth2Provider(app)
+def default_provider(application):
+    oauth = OAuth2Provider(application)
 
     @oauth.clientgetter
     def get_client(client_id):
@@ -200,9 +199,9 @@ def default_provider(app):
     return oauth
 
 
-def prepare_app(app):
-    db.init_app(app)
-    db.app = app
+def prepare_app(application):
+    db.init_app(application)
+    db.app = application
     db.create_all()
 
     client1 = Client(
@@ -248,25 +247,25 @@ def prepare_app(app):
         db.session.commit()
     except:
         db.session.rollback()
-    return app
+    return application
 
 
-def create_server(app, oauth=None):
+def create_server(application, oauth=None):
     if not oauth:
-        oauth = default_provider(app)
+        oauth = default_provider(application)
 
-    app = prepare_app(app)
+    application = prepare_app(application)
 
-    @app.before_request
+    @application.before_request
     def load_current_user():
         user = User.query.get(1)
         g.user = user
 
-    @app.route('/home')
+    @application.route('/home')
     def home():
         return render_template('home.html')
 
-    @app.route('/oauth/authorize', methods=['GET', 'POST'])
+    @application.route('/oauth/authorize', methods=['GET', 'POST'])
     @oauth.authorize_handler
     def authorize(*args, **kwargs):
         # NOTICE: for real project, you need to require login
@@ -284,35 +283,35 @@ def create_server(app, oauth=None):
         confirm = request.form.get('confirm', 'no')
         return confirm == 'yes'
 
-    @app.route('/oauth/token', methods=['POST', 'GET'])
+    @application.route('/oauth/token', methods=['POST', 'GET'])
     @oauth.token_handler
     def access_token():
         return {}
 
-    @app.route('/oauth/revoke', methods=['POST'])
+    @application.route('/oauth/revoke', methods=['POST'])
     @oauth.revoke_handler
     def revoke_token():
         pass
 
-    @app.route('/api/email')
+    @application.route('/api/email')
     @oauth.require_oauth('email')
     def email_api():
         oauth = request.oauth
         return jsonify(email='me@oauth.net', username=oauth.user.username)
 
-    @app.route('/api/client')
+    @application.route('/api/client')
     @oauth.require_oauth()
     def client_api():
         oauth = request.oauth
         return jsonify(client=oauth.client.name)
 
-    @app.route('/api/address/<city>')
+    @application.route('/api/address/<city>')
     @oauth.require_oauth('address')
     def address_api(city):
         oauth = request.oauth
         return jsonify(address=city, username=oauth.user.username)
 
-    @app.route('/api/method', methods=['GET', 'POST', 'PUT', 'DELETE'])
+    @application.route('/api/method', methods=['GET', 'POST', 'PUT', 'DELETE'])
     @oauth.require_oauth()
     def method_api():
         return jsonify(method=request.method)
@@ -321,16 +320,16 @@ def create_server(app, oauth=None):
     def require_oauth_invalid(req):
         return jsonify(message=req.error_message), 401
 
-    return app
+    return application
 
 
 if __name__ == '__main__':
     from flask import Flask
-    app = Flask(__name__)
-    app.debug = True
-    app.secret_key = 'development'
-    app.config.update({
+    application = Flask(__name__)
+    application.debug = True
+    application.secret_key = 'development'
+    application.config.update({
         'SQLALCHEMY_DATABASE_URI': 'sqlite:///test.sqlite'
     })
-    app = create_server(app)
-    app.run()
+    application = create_server(application)
+    application.run()
