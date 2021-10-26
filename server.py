@@ -214,7 +214,7 @@ def prepare_app(application):
         name='dev', client_id='dev', client_secret='dev',
         _redirect_uris=(
             'https://client-cubie.herokuapp.com/authorized '
-            'https://server-cubie.herokuapp.com/authorized'
+            'https://client-cubie.herokuapp.com/authorized'
         ),
     )
 
@@ -223,7 +223,7 @@ def prepare_app(application):
         client_secret='confidential', client_type='confidential',
         _redirect_uris=(
             'https://client-cubie.herokuapp.com/authorized '
-            'https://server-cubie.herokuapp.com/authorized'
+            'https://client-cubie.herokuapp.com/authorized'
         ),
     )
 
