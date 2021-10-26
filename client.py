@@ -2,8 +2,8 @@ from flask import Flask, redirect, url_for, session, request, jsonify, abort
 from flask_oauthlib.client import OAuth
 
 
-def create_client(app):
-    oauth = OAuth(app)
+def create_client(application):
+    oauth = OAuth(application)
 
     remote = oauth.remote_app(
         'dev',
@@ -76,8 +76,8 @@ if __name__ == '__main__':
     import os
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = 'true'
     # DEBUG=1 python oauth2_client.py
-    app = Flask(__name__)
-    app.debug = True
-    app.secret_key = 'development'
-    create_client(app)
-    app.run(host='localhost', port=8000)
+    application = Flask(__name__)
+    application.debug = True
+    application.secret_key = 'development'
+    create_client(application)
+    application.run(host='localhost', port=8000)
