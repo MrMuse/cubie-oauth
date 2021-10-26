@@ -17,23 +17,23 @@ def create_client(application):
         authorize_url='http://127.0.0.1:5000/oauth/authorize'
     )
 
-    @app.route('/')
+    @application.route('/')
     def index():
         if 'dev_token' in session:
             ret = remote.get('email')
             return jsonify(ret.data)
         return redirect(url_for('login'))
 
-    @app.route('/login')
+    @application.route('/login')
     def login():
         return remote.authorize(callback=url_for('authorized', _external=True))
 
-    @app.route('/logout')
+    @application.route('/logout')
     def logout():
         session.pop('dev_token', None)
         return redirect(url_for('index'))
 
-    @app.route('/authorized')
+    @application.route('/authorized')
     def authorized():
         resp = remote.authorized_response()
         if resp is None:
@@ -45,21 +45,21 @@ def create_client(application):
             return jsonify(resp)
         return str(resp)
 
-    @app.route('/client')
+    @application.route('/client')
     def client_method():
         ret = remote.get("client")
         if ret.status not in (200, 201):
             return abort(ret.status)
         return ret.raw_data
 
-    @app.route('/address')
+    @application.route('/address')
     def address():
         ret = remote.get('address/hangzhou')
         if ret.status not in (200, 201):
             return ret.raw_data, ret.status
         return ret.raw_data
 
-    @app.route('/method/<name>')
+    @application.route('/method/<name>')
     def method(name):
         func = getattr(remote, name)
         ret = func('method')
