@@ -4,7 +4,9 @@ from flask_oauthlib.client import OAuth
 import os
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = 'true'
 # DEBUG=1 python oauth2_client.py
-
+application = Flask("cubie-oauth-client")
+application.debug = False
+application.secret_key = 'production'
 
 
 def create_client(application):
@@ -78,8 +80,5 @@ def create_client(application):
 
 
 if __name__ == '__main__':
-    application = Flask("cubie-oauth-client")
-    application.debug = False
-    application.secret_key = 'production'
     create_client(application)
     application.run()
