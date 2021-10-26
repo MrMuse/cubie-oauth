@@ -1,6 +1,13 @@
 from flask import Flask, redirect, url_for, session, request, jsonify, abort
 from flask_oauthlib.client import OAuth
 
+import os
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = 'true'
+# DEBUG=1 python oauth2_client.py
+application = Flask("cubie-oauth-client")
+application.debug = False
+application.secret_key = 'production'
+
 
 def create_client(application):
     oauth = OAuth(application)
@@ -10,11 +17,11 @@ def create_client(application):
         consumer_key='dev',
         consumer_secret='dev',
         request_token_params={'scope': 'email'},
-        base_url='http://127.0.0.1:5000/api/',
+        base_url='https://server-cubie.herokuapp.com/api/',
         request_token_url=None,
         access_token_method='POST',
-        access_token_url='http://127.0.0.1:5000/oauth/token',
-        authorize_url='http://127.0.0.1:5000/oauth/authorize'
+        access_token_url='https://server-cubie.herokuapp.com/oauth/token',
+        authorize_url='https://server-cubie.herokuapp.com/oauth/authorize'
     )
 
     @application.route('/')
@@ -73,11 +80,5 @@ def create_client(application):
 
 
 if __name__ == '__main__':
-    import os
-    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = 'true'
-    # DEBUG=1 python oauth2_client.py
-    application = Flask(__name__)
-    application.debug = True
-    application.secret_key = 'development'
     create_client(application)
-    application.run(host='localhost', port=8000)
+    application.run()
