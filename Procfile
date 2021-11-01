@@ -1,1 +1,1 @@
-web:gunicorn server:application --timeout 15 --keep-alive 5
+web:gunicorn server:app --timeout 15 --keep-alive 5
