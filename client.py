@@ -4,13 +4,13 @@ from flask_oauthlib.client import OAuth
 import os
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = 'true'
 # DEBUG=1 python oauth2_client.py
-application = Flask("cubie-oauth-client")
-application.debug = False
-application.secret_key = 'production'
+app = Flask("cubie-oauth-client")
+app.debug = False
+app.secret_key = 'production'
 
 
-def create_client(application):
-    oauth = OAuth(application)
+def create_client(app):
+    oauth = OAuth(app)
 
     remote = oauth.remote_app(
         'dev',
@@ -24,23 +24,23 @@ def create_client(application):
         authorize_url='https://server-cubie.herokuapp.com/oauth/authorize'
     )
 
-    @application.route('/')
+    @app.route('/')
     def index():
         if 'dev_token' in session:
             ret = remote.get('email')
             return jsonify(ret.data)
         return redirect(url_for('login'))
 
-    @application.route('/login')
+    @app.route('/login')
     def login():
         return remote.authorize(callback=url_for('authorized', _external=True))
 
-    @application.route('/logout')
+    @app.route('/logout')
     def logout():
         session.pop('dev_token', None)
         return redirect(url_for('index'))
 
-    @application.route('/authorized')
+    @app.route('/authorized')
     def authorized():
         resp = remote.authorized_response()
         if resp is None:
@@ -52,21 +52,21 @@ def create_client(application):
             return jsonify(resp)
         return str(resp)
 
-    @application.route('/client')
+    @app.route('/client')
     def client_method():
         ret = remote.get("client")
         if ret.status not in (200, 201):
             return abort(ret.status)
         return ret.raw_data
 
-    @application.route('/address')
+    @app.route('/address')
     def address():
         ret = remote.get('address/hangzhou')
         if ret.status not in (200, 201):
             return ret.raw_data, ret.status
         return ret.raw_data
 
-    @application.route('/method/<name>')
+    @app.route('/method/<name>')
     def method(name):
         func = getattr(remote, name)
         ret = func('method')
@@ -80,5 +80,5 @@ def create_client(application):
 
 
 if __name__ == '__main__':
-    create_client(application)
-    application.run()
+    create_client(app)
+    app.run()
